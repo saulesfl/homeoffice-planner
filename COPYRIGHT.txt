@@ -1,0 +1,8 @@
+Home Office Planner
+Copyright © 2026 Florin Săulescu
+All rights reserved.
+
+This software and its associated components, code, graphics, and documentation
+are the exclusive property of Florin Săulescu. Unauthorized copying, distribution,
+modification, or use of this software, in whole or in part, is strictly prohibited
+unless explicit written permission is granted by the author.
