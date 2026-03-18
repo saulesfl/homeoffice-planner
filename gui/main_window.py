@@ -25,7 +25,7 @@ class MainWindow(QWidget):
         super().__init__()
 
         # --- Window title / size / icon ---
-        self.setWindowTitle("Home Office Planner v2.0.0 – by Florin Săulescu © 2026")
+        self.setWindowTitle("Home Office Planner v2.1.0 – by Florin Săulescu © 2026")
         self.resize(1200, 800)
 
         # Use the resource_path helper so it works in dev and in PyInstaller EXE
@@ -54,7 +54,7 @@ class MainWindow(QWidget):
         main_layout = QVBoxLayout()
 
         # --- Application Title (visible banner) ---
-        title = QLabel("Home Office Planner v2.0.0")
+        title = QLabel("Home Office Planner v2.1.0")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 22px; font-weight: bold; padding: 10px;")
         main_layout.addWidget(title)
@@ -325,10 +325,23 @@ class MainWindow(QWidget):
             )
         )
     def show_whats_new_popup(self):
-        """Show a friendly popup with the most important improvements in v2."""
+        """Show improvements in v2.1.0 and v2.0.0."""
         text = (
+            "<html>"
             "<div style='font-size: 13px; line-height:1.45;'>"
-            "<h3 style='margin:0 0 8px 0;'>🎉 What’s New in Home Office Planner v2.0.0</h3>"
+
+            "<h3 style='margin:0 0 8px 0;'>🎉 What’s New in Home Office Planner v2.1.0</h3>"
+            "<ul style='margin:0 0 12px 18px; padding:0;'>"
+            "<li><b>Cross‑month weekend enclosed detection (HO‑Link rule)</b>: "
+            "If the last <b>Friday HO‑Link</b> of the previous month meets a "
+            "<b>Monday HO‑Link</b> in the new month, the month is automatically flagged as "
+            "<b>Weekend enclosed = YES</b> and <b>Status = INVALID</b>.</li>"
+            "<li><b>Improved HO‑Link logic</b>: Blue HO‑Link marking now drives both same‑month "
+            "and cross‑month weekend rules consistently.</li>"
+            "<li><b>More robust JSON handling</b> for cross‑month HO detection.</li>"
+            "</ul>"
+
+            "<h3 style='margin:12px 0 8px 0;'>🆕 Highlights from v2.0.0</h3>"
             "<ul style='margin:0 0 0 18px; padding:0;'>"
             "<li><b>Week-number column removed</b> (the narrow column before Sunday is no longer shown).</li>"
             "<li><b>Right‑click on hovered workday</b> to add/remove planned holiday (no left‑click needed).</li>"
@@ -337,12 +350,15 @@ class MainWindow(QWidget):
             "<li><b>Today</b> button jumps to the <b>exact current day</b>; subtle hover highlight + blue ring for today.</li>"
             "<li><b>Yearly allowance</b> next to the summary with a live <b>Available</b> counter (green/red).</li>"
             "<li><b>Bigger calendar</b> with a <b>resizable splitter</b> — drag the divider to give the calendar more space.</li>"
-            "<li><b>Summary</b> redesigned (icons, spacing, compact cards) + mini‑stats.</li>"
+            "<li><b>Summary redesign</b> with icons, spacing, compact cards + mini‑stats.</li>"
             "<li><b>Status bar</b> messages with timestamps for saves and updates.</li>"
             "</ul>"
+
             "</div>"
+            "</html>"
         )
-        QMessageBox.information(self, "What’s New in v2.0.0", text)
+
+        QMessageBox.information(self, "What’s New in v2.1.0", text)
 
             # =========================
     # Navigation / page change

@@ -7,6 +7,7 @@ class RuleEngine:
     """
 
     def __init__(self, calendar_engine):
+        self.calendar_engine = calendar_engine
         self.ce = calendar_engine
         self.selected_days = set()
 
@@ -76,48 +77,85 @@ class RuleEngine:
 
     def violates_sandwich_rule(self) -> bool:
         """
-        Weekend sandwich rule (same-month only)
+        Weekend sandwich rule (same-month + cross-month HO-link extension)
 
-        A violation occurs only when BOTH of these are true:
-        • A Friday is selected AND the next Monday is selected
-        • Both days are workdays
-        • Both days are in the SAME month (and same year)
+        SAME-MONTH RULE:
+            Friday HO link + Monday HO link inside same month → violation
 
-        Cross-month cases (e.g., Friday in previous month + Monday in current month)
-        are explicitly ignored and DO NOT count as a violation for the current month.
-
-        Returns
-        -------
-        bool
-            True if a same-month weekend-sandwich violation is detected, else False.
+        CROSS-MONTH RULE (Option C):
+            If the previous month has a Friday HO LINK
+            AND the current month has a Monday HO LINK
+            (first Monday that is HO)
+            → violation
         """
-        # We only need to check Fridays that are selected in the current selection.
+
+        import datetime as dt
+        from datetime import date, timedelta
+        import json
+
+        # -------------------------------------------------
+        # SAME-MONTH VIOLATION (your original logic)
+        # -------------------------------------------------
         for friday in self.selected_days:
-            if friday.weekday() != 4:  # 0=Mon, 4=Fri
+            if friday.weekday() != 4:  # Friday
                 continue
 
             monday = friday + dt.timedelta(days=3)
-
-            # Same-month/same-year is a strict requirement.
-            if (monday.month, monday.year) != (friday.month, friday.year):
-                # This skips cross-month sandwiches by design.
+            if (monday.year, monday.month) != (friday.year, friday.month):
                 continue
 
-            # Monday must be selected too.
-            if monday not in self.selected_days:
-                continue
+            if monday in self.selected_days:
+                return True  # SAME-MONTH HO link violation
 
-            # Both sides must be workdays (respect holidays).
-            if not self.ce.is_workday(friday) or not self.ce.is_workday(monday):
-                continue
+        # -------------------------------------------------
+        # CROSS-MONTH HO-LINK LOGIC (Option C)
+        # -------------------------------------------------
 
-            # Same-month Friday+Monday selected and both workdays -> violation.
-            return True
+        cy, cm = self.ce.year, self.ce.month
 
-        # No same-month sandwich found.
-        return False
-    
-    # ------------------------------------------------------------
+        # Determine previous month (py, pm)
+        if cm == 1:
+            py = cy - 1
+            pm = 12
+        else:
+            py = cy
+            pm = cm - 1
+
+        # LOAD previous month HO from file
+        try:
+            with open("data/homeoffice_plans.json", "r", encoding="utf-8") as f:
+                all_plans = json.load(f)
+        except:
+            all_plans = {}
+
+        prev_list = all_plans.get(str(py), {}).get(f"{pm:02d}", [])
+        prev_ho = {date.fromisoformat(s) for s in prev_list}
+
+        # 1️⃣ Find last Friday HO-LINK of previous month
+        last_fri_link = None
+        for d in sorted(prev_ho):
+            if d.weekday() == 4:  # Friday
+                last_fri_link = d
+
+        # If no HO Friday last month → NO violation
+        if not last_fri_link:
+            return False
+
+        # 2️⃣ Find FIRST Monday HO-LINK of current month
+        first_mon_link = None
+        for d in sorted(self.selected_days):
+            if d.month == cm and d.weekday() == 0:   # Monday
+                first_mon_link = d
+                break
+
+        # If no Monday HO this month → NO violation
+        if not first_mon_link:
+            return False
+
+        # If both exist → WEEKEND ENCLOSED
+        return True
+   
+
     # Summary generator for GUI
     # ------------------------------------------------------------
     def generate_report(self):
